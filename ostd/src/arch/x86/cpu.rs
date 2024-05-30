@@ -281,6 +281,10 @@ impl UserContext {
     pub fn fp_regs_mut(&mut self) -> &mut FpRegs {
         &mut self.fp_regs
     }
+
+    pub fn set_tls(&mut self, tls_base: u64) {
+        self.user_context.set_tls(tls_base as usize)
+    }
 }
 
 impl UserContextApiInternal for UserContext {
