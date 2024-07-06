@@ -2,9 +2,9 @@
 
 //! Logging support.
 
-use log::{Level, Metadata, Record};
-
 use log::{Level, LevelFilter, Metadata, Record};
+use core::str::FromStr;
+
 
 const LOGGER: Logger = Logger {};
 
