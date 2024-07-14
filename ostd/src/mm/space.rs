@@ -4,26 +4,27 @@ use core::ops::Range;
 
 use spin::Once;
 
-use super::{
-    io::UserSpace,
-    is_page_aligned,
-    kspace::KERNEL_PAGE_TABLE,
-    page_table::{PageTable, PageTableMode, UserMode},
-    CachePolicy, FrameVec, PageFlags, PageProperty, PagingConstsTrait, PrivilegedPageFlags,
-    VmReader, VmWriter, PAGE_SIZE,
-};
 use crate::{
     arch::mm::{
-        current_page_table_paddr, tlb_flush_addr_range, tlb_flush_all_excluding_global,
-        PageTableEntry, PagingConsts,
+        current_page_table_paddr, PageTableEntry, PagingConsts,
+        tlb_flush_addr_range, tlb_flush_all_excluding_global,
     },
     cpu::CpuExceptionInfo,
+    Error,
     mm::{
-        page_table::{Cursor, PageTableQueryResult as PtQr},
-        Frame, MAX_USERSPACE_VADDR,
+        Frame,
+        MAX_USERSPACE_VADDR, page_table::{Cursor, PageTableQueryResult as PtQr},
     },
     prelude::*,
-    Error,
+};
+
+use super::{
+    CachePolicy,
+    FrameVec,
+    io::UserSpace,
+    is_page_aligned,
+    kspace::KERNEL_PAGE_TABLE, PAGE_SIZE, page_table::{PageTable, PageTableMode, UserMode}, PageFlags, PageProperty, PagingConstsTrait,
+    PrivilegedPageFlags, VmReader, VmWriter,
 };
 
 /// Virtual memory space.
@@ -68,7 +69,7 @@ impl VmSpace {
     }
 
     /// Activates the page table.
-    pub(crate) fn activate(&self) {
+    pub fn activate(&self) {
         self.pt.activate();
     }
 

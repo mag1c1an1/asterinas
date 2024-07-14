@@ -3,16 +3,19 @@
 //! A contiguous range of page frames.
 
 use alloc::sync::Arc;
+use alloc::vec::Vec;
 use core::ops::Range;
 
-use super::Frame;
 use crate::{
+    Error,
     mm::{
-        page::{cont_pages::ContPages, meta::FrameMeta, Page},
-        HasPaddr, Paddr, VmIo, VmReader, VmWriter, PAGE_SIZE,
-    },
-    Error, Result,
+        HasPaddr,
+        Paddr, page::{cont_pages::ContPages, meta::FrameMeta, Page}, PAGE_SIZE, VmIo, VmReader, VmWriter,
+    }, Result,
 };
+use crate::mm::FrameVec;
+
+use super::Frame;
 
 /// A handle to a contiguous range of page frames (physical memory pages).
 ///
@@ -96,7 +99,14 @@ impl Segment {
     pub fn as_mut_ptr(&self) -> *mut u8 {
         super::paddr_to_vaddr(self.start_paddr()) as *mut u8
     }
+
+    /// cast to FrameVec
+    pub fn to_frame_vec(self) -> FrameVec {
+        let pages: Vec<Page<FrameMeta>> = Arc::into_inner(self.inner).expect("more than one strong count").into();
+        FrameVec(pages.into_iter().map(|page| Frame { page }).collect())
+    }
 }
+
 
 impl<'a> Segment {
     /// Returns a reader to read data from it.

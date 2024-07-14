@@ -8,6 +8,7 @@ use crate::{
     Error,
     mm::{Frame, PAGE_SIZE, VmIo, VmReader, VmWriter}, Result,
 };
+use crate::mm::Segment;
 
 /// A collection of base page frames (regular physical memory pages).
 ///
@@ -168,5 +169,12 @@ impl<'a> Iterator for FrameVecIter<'a> {
             return None;
         }
         Some(self.frames.0.get(self.current).unwrap())
+    }
+}
+
+
+impl From<Segment> for FrameVec {
+    fn from(value: Segment) -> Self {
+        value.to_frame_vec()
     }
 }

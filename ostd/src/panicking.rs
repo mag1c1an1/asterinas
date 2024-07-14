@@ -2,25 +2,24 @@
 
 //! Panic support.
 
+extern crate cfg_if;
+extern crate gimli;
 use alloc::{boxed::Box, string::ToString};
 use core::ffi::c_void;
 
+use gimli::Register;
 use log::error;
+use unwinding::{
+    abi::{
+        _Unwind_Backtrace, _Unwind_FindEnclosingFunction, _Unwind_GetGR, _Unwind_GetIP,
+        UnwindContext, UnwindReasonCode,
+    },
+    panic::begin_panic,
+};
 
 use crate::{
     arch::qemu::{exit_qemu, QemuExitCode},
     early_print, early_println,
-};
-
-extern crate cfg_if;
-extern crate gimli;
-use gimli::Register;
-use unwinding::{
-    abi::{
-        UnwindContext, UnwindReasonCode, _Unwind_Backtrace, _Unwind_FindEnclosingFunction,
-        _Unwind_GetGR, _Unwind_GetIP,
-    },
-    panic::begin_panic,
 };
 
 /// The panic handler must be defined in the binary crate or in the crate that the binary
@@ -28,7 +27,7 @@ use unwinding::{
 /// due to prismatic dependencies. That's why we export this symbol and state the
 /// panic handler in the binary crate.
 #[export_name = "__aster_panic_handler"]
-pub fn panic_handler(info: &core::panic::PanicInfo) -> ! {
+pub fn panic_tnihandler(info: &core::panic::PanicInfo) -> ! {
     let throw_info = ktest::PanicInfo {
         message: info.message().to_string(),
         file: info.location().unwrap().file().to_string(),
@@ -36,7 +35,8 @@ pub fn panic_handler(info: &core::panic::PanicInfo) -> ! {
         col: info.location().unwrap().column() as usize,
     };
     // Throw an exception and expecting it to be caught.
-    begin_panic(Box::new(throw_info.clone()));
+    // FIXME restore
+    // begin_panic(Box::new(throw_info.clone()));
     // If the exception is not caught (e.g. by ktest) and resumed,
     // then print the information and abort.
     error!("Uncaught panic!");
